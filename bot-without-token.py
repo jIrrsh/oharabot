@@ -12,20 +12,23 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
         print("-----")
-        await self.change_presence(status=discord.Status.online, activity=discord.Game("5집 센터 마리"))
+        await self.change_presence(status=discord.Status.online, activity=discord.Game("샤이니!"))
  
     async def on_message(self, message):
         if message.author == self.user:
             return
 
         if ".dcinside.com/" in  message.content: # 채팅에서 디씨 링크 여부 참조
-            msg = message.content.replace("&", "/")
-            msg = msg.split("/")
-
-            if msg[3] == "board": # 링크에서 갤러리명과 글 번호 추출
+            msg = message.content.replace("&", "/").split("/")
+            if msg[2] == "m.dcinside.com": # 모바일 링크였을 경우
                 gallname = msg[4]
                 postnum = msg[5]
-            elif msg[6].startswith("?id="):
+
+            elif msg[2] == "gall.dcinside.com" and msg[3] == "board": # 메이저 갤러리의 경우
+                gallname = msg[5][4:]
+                postnum = msg[6][3:]
+
+            elif msg[2] == "gall.dcinside.com" and msg[3] == "mgallery": #마이너 갤러리의 경우
                 gallname = msg[6][4:]
                 postnum = msg[7][3:]
 
@@ -78,9 +81,6 @@ class MyClient(discord.Client):
                 embed.set_footer(text=f"{footer} - {gallname} 갤러리")
 
             await message.channel.send(embed=embed, file=sunshine)
-
-
-
 
 intents = discord.Intents.default()
 intents.message_content = True
