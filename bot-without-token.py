@@ -64,7 +64,7 @@ class MyClient(discord.Client):
                 
             sunshine = discord.File(f"./images/{ext}", filename=ext) # 이미지를 디스코드 서버에 업로드해 링크화
 
-            embed=discord.Embed(title=doc.title, url=f"https://m.dcinside.com/board/{gallname}/{postnum}", description=f"텍스트 {len(doc.contents.replace("- dc official App", ""))}자 이미지 {image_count}개", color=0x357df2)
+            embed=discord.Embed(title=doc.title, url=f"https://m.dcinside.com/board/{gallname}/{postnum}", description="텍스트 %d자 이미지 %d개" % (len(doc.contents.replace("- dc official App", "").strip()), image_count), color=0x357df2)
             if len(doc.contents.replace("- dc official App", "")) <= 50: # 글이 50자 이하일 시 본문에서 개행 제거 후 임베드에 포함
                 embed.add_field(name='', value=doc.contents.replace("\n", " ").replace("- dc official App", "")) # 임베드 조합
             embed.set_author(name=f"{doc.voteup_count} ⭐    {doc.votedown_count} ⬇️    {comm_count} 💬    {doc.view_count} 👁️")
