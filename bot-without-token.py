@@ -22,16 +22,6 @@ class MyClient(discord.Client):
             option_val = msg[-1].split(" ")[1:]
             option = {'image': 0, 'content': False, 'noimage': False}
 
-            for i in option_val: # 옵션 내용 확인
-                if i[:4] == "-ima":
-                    option['image'] = int(i[6]) - 1
-                if i[:4] == "-con":
-                    option['content'] = True
-                if i[:4] == "-noi":
-                    option['noimage'] = True
-                
-            await asyncio.sleep(0.5)
-
             if msg[2] == "m.dcinside.com": # 모바일 링크였을 경우
                 gallname = msg[4]
                 postnum = msg[5]
@@ -49,6 +39,14 @@ class MyClient(discord.Client):
             print(nowtime)
 
             async with dc_api.API() as api: #API 불러오기
+                for i in option_val: # 옵션 내용 확인
+                    if i[:4] == "-ima":
+                        option['image'] = int(i[6]) - 1
+                    if i[:4] == "-con":
+                        option['content'] = True
+                    if i[:4] == "-noi":
+                        option['noimage'] = True
+                        
                 doc = await api.document(board_id=gallname, document_id=postnum)
                 image_count = 0 
                 comm_count = 0
