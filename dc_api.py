@@ -238,7 +238,7 @@ class API:
             for adv in doc_content.xpath("//img"):
                 if adv.get("src", "").startswith("https://nstatic") and not adv.get("data-original"):
                     adv.getparent().remove(adv)
-            return Document(
+            try: return Document(
                     id = document_id,
                     board_id = board_id,
                     title= title,
@@ -261,6 +261,30 @@ class API:
                     comments= lambda: self.comments(board_id, document_id),
                     time= self.__parse_time(time)
                     )
+            except: return Document(
+                    id = document_id,
+                    board_id = board_id,
+                    title= title,
+                    author= author,
+                    author_id =author_id,
+                    contents= '\n'.join(i.strip() for i in doc_content.itertext() if i.strip() and not i.strip().startswith("이미지 광고")),
+                    images= [Image(
+                        src=i.get("data-original", i.get("src")), 
+                        board_id=board_id, 
+                        document_id=document_id, 
+                        session=self.session)
+                        for i in doc_content.xpath("//img") 
+                            if i.get("data-original") or (not i.get("src","").startswith("https://nstatic") and
+                                not i.get("src", "").startswith("https://img.iacstatic.co.kr") and i.get("src"))],
+                    html= lxml.html.tostring(doc_content, encoding=str),
+                    view_count= int(parsed.xpath("//ul[@class='ginfo2']")[1][0].text.strip().split()[1]),
+                    voteup_count= int(parsed.xpath("//span[@id='recomm_btn']")[0].text.strip()),
+                    votedown_count= "-",
+                    logined_voteup_count= int(parsed.xpath("//span[@id='recomm_btn_member']")[0].text.strip()),
+                    comments= lambda: self.comments(board_id, document_id),
+                    time= self.__parse_time(time)
+                    )
+                
         else:
             # fail due to unusual tags in mobile version
             # at now, just skip it
