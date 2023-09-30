@@ -89,6 +89,10 @@ class MyClient(discord.Client):
                 embed.set_footer(text=f"{footer} - 러브라이브 선샤인 갤러리") # 갤러리명 확인 후 갤러리 태그 부착
             elif gallname == "lilyfever":
                 embed.set_footer(text=f"{footer} - 대세는 백합 갤러리")
+            elif gallname == "npb":
+                embed.set_footer(text=f"{footer} - 일본야구 갤러리")
+            elif gallname == "nokanto":
+                embed.set_footer(text=f"{footer} - 일본여행 - 관동이외 갤러리")
             else:
                 embed.set_footer(text=f"{footer} - {gallname} 갤러리")
 
