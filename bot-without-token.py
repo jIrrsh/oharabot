@@ -20,6 +20,7 @@ class MyClient(discord.Client):
         if ".dcinside.com/" in  message.content: # 채팅에서 디씨 링크 여부 참조
             msg = message.content.replace("&", "/").split("/")
             option_val = msg[-1].split(" ")[1:]
+            msg[-1] = msg[-1].split(" ")[0]
             option = {'image': 0, 'content': False, 'noimage': False}
 
             if msg[2] == "m.dcinside.com": # 모바일 링크였을 경우
@@ -41,7 +42,7 @@ class MyClient(discord.Client):
             async with dc_api.API() as api: #API 불러오기
                 for i in option_val: # 옵션 내용 확인
                     if i[:4] == "-ima":
-                        option['image'] = int(i[6]) - 1
+                        option['image'] = int(i[6:]) - 1
                     if i[:4] == "-con":
                         option['content'] = True
                     if i[:4] == "-noi":
