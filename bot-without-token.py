@@ -20,7 +20,7 @@ class MyClient(discord.Client):
             msg = message.content.replace("&", "/").split("/")
             option_val = msg[-1].split(" ")[1:]
             msg[-1] = msg[-1].split(" ")[0]
-            option = {'image': 0, 'content': False, 'noimage': False, 'nocontent': False, 'zacal': False, 'yesenter': False}
+            option = {'image': 0, 'content': False, 'noimage': False, 'nocontent': False, 'zacal': False, 'yesenter': False, 'onlyimage': False}
 
             if msg[2] == "m.dcinside.com": # 모바일 링크였을 경우
                 gallname = msg[4]
@@ -40,19 +40,28 @@ class MyClient(discord.Client):
 
             async with dc_api.API() as api: #API 불러오기
                 for i in option_val: # 옵션 내용 확인
-                    if i[:5] == "-imag":
+                    if i[:4] == "-ima":
                         option['image'] = int(i[6:]) - 1
-                    if i[:5] == "-cont":
+                        print(f"-image{option['image']}")
+                    if i[:4] == "-con":
                         option['content'] = True
-                    if i[:5] == "-noco":
+                        print("-content")
+                    if i[:4] == "-noc":
                         option['nocontent'] = True
-                    if i[:5] == "-zaca":
+                        print("-nocontent")
+                    if i[:4] == "-zac":
                         option['zacal'] = True
-                    if i[:5] == "-noim":
+                        print("-zacal")
+                    if i[:4] == "-noi":
                         option['noimage'] = True
-                    if i[:5] == "-yese":
+                        print("-noimage")
+                    if i[:4] == "-yes":
                         option['yesenter'] = True
-                        
+                        print("-yesenter")
+                    if i[:4] == "-onl":
+                        option['onlyimage'] = True
+                        print("-onlyimage")
+           
                 doc = await api.document(board_id=gallname, document_id=postnum)
                 image_count = 0 
                 comm_count = 0
@@ -82,30 +91,25 @@ class MyClient(discord.Client):
             if not option["noimage"]:
                 sunshine = discord.File(f"./images/{ext}", filename=ext) # 이미지를 디스코드 서버에 업로드해 링크화
 
-            conwlink = doc.contents.replace("\n", " ").replace("- dc official App", "").strip().split(" ")
+            raw = doc.contents
+            conwlink = raw.replace("\n", " ").replace("- dc official App", "").strip().split(" ")
             for index in range (0, (len(conwlink)), 1): # 본문에서 링크 제거
                 if conwlink[index][:4] == "http":
                     conwlink[index] = ""
-            content = " ".join(conwlink).replace("  ", " ").strip()
+            orgcontent = " ".join(conwlink).replace("  ", " ").strip()
+            content= ""
 
-            embed=discord.Embed(title=doc.title, url=f"https://m.dcinside.com/board/{gallname}/{postnum}", description=f"텍스트 {len(content)}자 이미지 {image_count}개", color=0x357df2)
             if option['nocontent'] == True: # nocontent 옵션이 1일 경우
-                print("")
+                content= ""
             elif option["yesenter"]:
-                embed.add_field(name='', value=doc.contents[:99] + "…")
-            elif 0 <= len(content) <= 100 or (option['content'] and len(content) <= 950): # 글 길이가 100자 이하거나 content 옵션이 1이고 글 길이가 950자 이하인 경우
-                embed.add_field(name='', value=content)
+                content= raw[:99] + "…"
+            elif 0 <= len(orgcontent) <= 100 or (option['content'] and len(orgcontent) <= 950): # 글 길이가 100자 이하거나 content 옵션이 1이고 글 길이가 950자 이하인 경우
+                content= orgcontent
             elif not option['content']: # 글 길이가 100자 초과하며 content 옵션이 0인 경우
-                embed.add_field(name='', value=content[:99] + "…")
+                content= orgcontent[:99] + "…"
             else: # 글 길이가 950자를 초과하며 content 옵션이 1인 경우
-                embed.add_field(name='', value=content[:950] + "…")
-            embed.set_author(name=f"{doc.voteup_count} ⭐    {doc.votedown_count} ⬇️    {comm_count} 💬    {doc.view_count} 👁️")
-            if not option['noimage']: embed.set_image(url=f"attachment://{ext}")
-            if doc.author_id == None:
-                footer = doc.author # footer에 표시될 아이디 선별
-            else:
-                footer = f"{doc.author}({doc.author_id})"      
-
+                content= orgcontent[:950] + "…"
+                
             gallkey = {'sunshine': "러브라이브 선샤인", 
                        'npb': "일본야구", 
                        'lilyfever': "대세는 백합", 
@@ -116,11 +120,24 @@ class MyClient(discord.Client):
                        'revuestarlight': "레뷰 스타라이트", 
                        'llstar': "러브라이브! 스쿠스타", 
                        'jr': "일본 철도"
-                       }   
-            try:
-                embed.set_footer(text=f"{footer} - {gallkey[gallname]} 갤러리") # 갤러리명 확인 후 갤러리 태그 부착
-            except:
-                embed.set_footer(text=f"{footer} - {gallname} 갤러리")
+                       } 
+            embed=discord.Embed(title="", description="", color=0x357df2)
+
+            if not option["onlyimage"]:
+                embed=discord.Embed(title=doc.title, url=f"https://m.dcinside.com/board/{gallname}/{postnum}", description=f"텍스트 {len(orgcontent)}자 이미지 {image_count}개", color=0x357df2)
+
+                embed.set_author(name=f"{doc.voteup_count} ⭐    {doc.votedown_count} ⬇️    {comm_count} 💬    {doc.view_count} 👁️")
+
+                if not option["nocontent"]: embed.add_field(name='', value=content)
+
+                if doc.author_id == None: footer = doc.author # footer에 표시될 아이디 선별
+                else: footer = f"{doc.author}({doc.author_id})"  
+
+                try: embed.set_footer(text=f"{footer} - {gallkey[gallname]} 갤러리") # 갤러리명 확인 후 갤러리 태그 부착
+                except: embed.set_footer(text=f"{footer} - {gallname} 갤러리")
+
+            if not option['noimage']: 
+                embed.set_image(url=f"attachment://{ext}")
 
             if option['noimage']: await message.channel.send(embed=embed)
             else: await message.channel.send(embed=embed, file=sunshine)
